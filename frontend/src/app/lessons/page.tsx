@@ -1,39 +1,32 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, ArrowRight, Filter } from "lucide-react";
-
-const categories = [
-  {
-    name: "Electronics Foundations",
-    lessons: [
-      { title: "Voltage, Current & Resistance", duration: "15 min", status: "available" as const },
-      { title: "Semiconductor Physics", duration: "20 min", status: "available" as const },
-      { title: "Diode Operation", duration: "18 min", status: "locked" as const },
-      { title: "MOSFET Fundamentals", duration: "25 min", status: "locked" as const },
-    ],
-  },
-  {
-    name: "Digital Logic",
-    lessons: [
-      { title: "Number Systems", duration: "12 min", status: "locked" as const },
-      { title: "Boolean Algebra", duration: "20 min", status: "locked" as const },
-      { title: "Logic Gates", duration: "15 min", status: "locked" as const },
-      { title: "Karnaugh Maps", duration: "22 min", status: "locked" as const },
-    ],
-  },
-  {
-    name: "RTL Design",
-    lessons: [
-      { title: "Introduction to Verilog", duration: "30 min", status: "locked" as const },
-      { title: "Combinational Logic in Verilog", duration: "25 min", status: "locked" as const },
-      { title: "Sequential Logic & Flip-Flops", duration: "28 min", status: "locked" as const },
-      { title: "Finite State Machines", duration: "35 min", status: "locked" as const },
-    ],
-  },
-];
+import { BookOpen, Clock, ArrowRight, Filter, Loader2 } from "lucide-react";
+import { getModules, type ModuleSummary } from "@/lib/api/client";
 
 export default function LessonsPage() {
+  const [modules, setModules] = useState<ModuleSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getModules()
+      .then(setModules)
+      .catch(() => setError("Could not load lessons. Is the backend running?"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const grouped = modules.reduce<Record<string, ModuleSummary[]>>((acc, m) => {
+    if (!acc[m.subject]) acc[m.subject] = [];
+    acc[m.subject].push(m);
+    return acc;
+  }, {});
+
+  const subjects = Object.keys(grouped).sort();
+
   return (
     <div className="px-4 lg:px-8 py-6 max-w-6xl">
       <PageHeader
@@ -47,53 +40,64 @@ export default function LessonsPage() {
         }
       />
 
-      <div className="space-y-8">
-        {categories.map((category) => (
-          <div key={category.name}>
-            <h2 className="text-lg font-semibold mb-4">{category.name}</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {category.lessons.map((lesson) => (
-                <Card
-                  key={lesson.title}
-                  className={
-                    lesson.status === "locked"
-                      ? "opacity-60"
-                      : "cursor-pointer hover:border-primary/50 transition-colors"
-                  }
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        <div className="mt-0.5">
-                          <BookOpen
-                            className={`h-5 w-5 ${
-                              lesson.status === "locked"
-                                ? "text-muted-foreground"
-                                : "text-primary"
-                            }`}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="font-medium text-sm">{lesson.title}</h3>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {lesson.duration}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : error ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            {error}
+          </CardContent>
+        </Card>
+      ) : subjects.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No lessons found. Run the seed script to populate content.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-8">
+          {subjects.map((subject) => (
+            <div key={subject}>
+              <h2 className="text-lg font-semibold mb-4">{subject}</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {grouped[subject].map((mod) => (
+                  <Card
+                    key={mod.id}
+                    className="cursor-pointer hover:border-primary/50 transition-colors"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-0.5">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="space-y-1">
+                            <h3 className="font-medium text-sm">{mod.title}</h3>
+                            {mod.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {mod.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {mod.lesson_count} lessons
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {lesson.status !== "locked" && (
                         <Button variant="ghost" size="icon-sm">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

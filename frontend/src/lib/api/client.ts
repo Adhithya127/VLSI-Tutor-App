@@ -99,3 +99,52 @@ export async function register(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+export interface ModuleSummary {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  subject: string;
+  order: number;
+  milestone_id: number | null;
+  lesson_count: number;
+}
+
+export interface LessonSummary {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  duration_minutes: number;
+  order: number;
+  module_id: string;
+}
+
+export interface ModuleDetail extends ModuleSummary {
+  lessons: LessonSummary[];
+}
+
+export interface MilestoneInfo {
+  id: number;
+  module_count: number;
+}
+
+export async function getModules(
+  milestoneId?: number,
+): Promise<ModuleSummary[]> {
+  const params = milestoneId !== undefined ? `?milestone_id=${milestoneId}` : "";
+  return request<ModuleSummary[]>(`/api/v1/curriculum/modules${params}`);
+}
+
+export async function getModule(moduleId: string): Promise<ModuleDetail> {
+  return request<ModuleDetail>(`/api/v1/curriculum/modules/${moduleId}`);
+}
+
+export async function getLesson(lessonId: string): Promise<LessonSummary> {
+  return request<LessonSummary>(`/api/v1/curriculum/lessons/${lessonId}`);
+}
+
+export async function getMilestones(): Promise<MilestoneInfo[]> {
+  return request<MilestoneInfo[]>("/api/v1/curriculum/milestones");
+}
