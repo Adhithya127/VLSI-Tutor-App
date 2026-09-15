@@ -12,6 +12,7 @@ class LessonBase(BaseModel):
 class LessonResponse(LessonBase):
     id: str
     module_id: str
+    content: str | None = None
 
     model_config = {"from_attributes": True}
 

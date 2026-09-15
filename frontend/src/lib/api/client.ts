@@ -119,6 +119,7 @@ export interface LessonSummary {
   duration_minutes: number;
   order: number;
   module_id: string;
+  content: string | null;
 }
 
 export interface ModuleDetail extends ModuleSummary {
