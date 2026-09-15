@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
-from app.api.health import router as health_router
+from app.api import api_router
 
 
 def create_app() -> FastAPI:
@@ -20,7 +21,14 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    application.include_router(health_router)
+    @application.exception_handler(Exception)
+    async def global_exception_handler(_request: Request, exc: Exception):
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+        )
+
+    application.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
     return application
 

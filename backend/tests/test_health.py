@@ -1,0 +1,18 @@
+import pytest
+
+
+@pytest.mark.anyio
+async def test_health_check(client):
+    response = await client.get("/api/v1/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "VLSI-Tutor"
+
+
+@pytest.mark.anyio
+async def test_health_check_via_api_prefix(client):
+    response = await client.get("/api/v1/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
