@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -8,10 +9,19 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Sidebar } from "./sidebar";
+import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
+  const router = useRouter();
+  const { user, loading, logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    router.push("/");
+  }
+
   return (
     <header className="flex items-center justify-between px-4 lg:px-6 h-14 border-b border-border bg-card">
       <div className="flex items-center gap-4">
@@ -39,10 +49,31 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm">
-          Sign In
-        </Button>
-        <Button size="sm">Get Started</Button>
+        {loading ? (
+          <div className="h-8 w-16 animate-pulse bg-muted rounded" />
+        ) : user ? (
+          <>
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              {user.display_name || user.username}
+            </span>
+            <Button variant="ghost" size="icon-sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              render={<Link href="/signin" />}
+            >
+              Sign In
+            </Button>
+            <Button render={<Link href="/register" />} size="sm">
+              Get Started
+            </Button>
+          </>
+        )}
       </div>
     </header>
   );
