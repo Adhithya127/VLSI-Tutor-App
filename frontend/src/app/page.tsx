@@ -52,12 +52,16 @@ export default function Home() {
         </p>
 
         <div className="flex items-center justify-center gap-3">
-          <Button render={<Link href="/dashboard" />} size="lg">
-            Start Learning
-          </Button>
-          <Button render={<Link href="/journey" />} variant="outline" size="lg">
-            View Curriculum
-          </Button>
+          <Link href="/register">
+            <Button size="lg">
+              Start Learning
+            </Button>
+          </Link>
+          <Link href="/journey">
+            <Button variant="outline" size="lg">
+              View Curriculum
+            </Button>
+          </Link>
         </div>
       </div>
 

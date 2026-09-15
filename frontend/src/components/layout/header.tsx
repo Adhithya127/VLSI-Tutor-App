@@ -62,16 +62,16 @@ export function Header() {
           </>
         ) : (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              render={<Link href="/signin" />}
-            >
-              Sign In
-            </Button>
-            <Button render={<Link href="/register" />} size="sm">
-              Get Started
-            </Button>
+            <Link href="/signin">
+              <Button variant="ghost" size="sm">
+                Sign In
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">
+                Get Started
+              </Button>
+            </Link>
           </>
         )}
       </div>
