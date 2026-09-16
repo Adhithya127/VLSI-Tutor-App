@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import {
   getModules,
+  getModule,
   getExercisesForLesson,
   submitExercise,
   type ModuleSummary,
+  type ModuleDetail,
   type LessonSummary,
   type Exercise,
   type ExerciseResult,
@@ -35,7 +37,7 @@ interface QuizResult {
 
 export default function ExercisesPage() {
   const { user } = useAuth();
-  const [modules, setModules] = useState<ModuleSummary[]>([]);
+  const [modules, setModules] = useState<ModuleDetail[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<LessonSummary | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [quizState, setQuizState] = useState<QuizState>("selecting");
@@ -55,7 +57,10 @@ export default function ExercisesPage() {
     setLoading(true);
     try {
       const mods = await getModules();
-      setModules(mods);
+      const details = await Promise.all(
+        mods.map((m) => getModule(m.id).catch(() => null))
+      );
+      setModules(details.filter((d): d is ModuleDetail => d !== null));
     } catch {
       // ignore
     }
@@ -258,7 +263,7 @@ export default function ExercisesPage() {
                 const letter = String.fromCharCode(65 + i);
                 const isSelected = selectedAnswer === option;
                 const isCorrect = showResult && option === exercise.correct_answer;
-                const isWrong = showResult && isSelected && !exercise.result?.is_correct;
+                const isWrong = showResult && isSelected && !currentResult?.is_correct;
 
                 return (
                   <button
