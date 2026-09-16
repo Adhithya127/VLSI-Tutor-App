@@ -34,6 +34,13 @@ const navigation = [
       { name: "Knowledge", href: "/knowledge" },
     ],
   },
+  {
+    title: "Account",
+    items: [
+      { name: "Profile", href: "/profile" },
+      { name: "Settings", href: "/settings" },
+    ],
+  },
 ];
 
 export function Sidebar() {
