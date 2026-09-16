@@ -374,3 +374,21 @@ export async function getLessonProgress(
 export async function getProgressOverview(): Promise<ProgressOverview> {
   return request<ProgressOverview>("/api/v1/progress/overview");
 }
+
+export interface SearchResult {
+  id: string;
+  title: string;
+  description: string | null;
+  subject?: string;
+  module_id?: string;
+  type: "module" | "lesson";
+}
+
+export interface SearchResponse {
+  modules: SearchResult[];
+  lessons: SearchResult[];
+}
+
+export async function searchContent(query: string): Promise<SearchResponse> {
+  return request<SearchResponse>(`/api/v1/search?q=${encodeURIComponent(query)}`);
+}

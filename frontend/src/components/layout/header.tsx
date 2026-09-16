@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, LogOut } from "lucide-react";
 import { Sidebar } from "./sidebar";
+import { SearchBar } from "./search-bar";
 import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
@@ -48,7 +49,8 @@ export function Header() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
+        <SearchBar />
         {loading ? (
           <div className="h-8 w-16 animate-pulse bg-muted rounded" />
         ) : user ? (
