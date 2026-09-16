@@ -323,3 +323,54 @@ export async function getExerciseOverview(): Promise<{
 }> {
   return request("/api/v1/exercises/stats/overview");
 }
+
+export interface LessonProgressItem {
+  lesson_id: string;
+  completed: boolean;
+  score: number;
+  time_spent_minutes: number;
+  completed_at: string | null;
+}
+
+export interface ProgressOverview {
+  total_lessons: number;
+  completed_lessons: number;
+  total_modules: number;
+  completed_modules: number;
+  total_exercises: number;
+  correct_exercises: number;
+  accuracy: number;
+  total_xp: number;
+  level: number;
+  xp_in_level: number;
+  streak_days: number;
+}
+
+export async function markLessonComplete(
+  lessonId: string,
+  score?: number,
+  timeMinutes?: number,
+): Promise<{ status: string; lesson_id: string }> {
+  const params = new URLSearchParams();
+  if (score !== undefined) params.set("score", String(score));
+  if (timeMinutes !== undefined)
+    params.set("time_spent_minutes", String(timeMinutes));
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return request(`/api/v1/progress/lessons/${lessonId}/complete${qs}`, {
+    method: "POST",
+  });
+}
+
+export async function getLessonProgressList(): Promise<LessonProgressItem[]> {
+  return request<LessonProgressItem[]>("/api/v1/progress/lessons");
+}
+
+export async function getLessonProgress(
+  lessonId: string,
+): Promise<LessonProgressItem> {
+  return request<LessonProgressItem>(`/api/v1/progress/lessons/${lessonId}`);
+}
+
+export async function getProgressOverview(): Promise<ProgressOverview> {
+  return request<ProgressOverview>("/api/v1/progress/overview");
+}

@@ -6,3 +6,4 @@ from app.models.mastery import Mastery, ReviewSchedule  # noqa: F401
 from app.models.resource import Resource, ResourceChunk  # noqa: F401
 from app.models.embedding import Embedding  # noqa: F401
 from app.models.chat import Conversation, Message  # noqa: F401
+from app.models.progress import LessonProgress  # noqa: F401

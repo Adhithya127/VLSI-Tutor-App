@@ -141,6 +141,40 @@ CREATE TABLE IF NOT EXISTS resource_chunks (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS conversations (
+    id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id VARCHAR(36) NOT NULL REFERENCES users(id),
+    title VARCHAR(200),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    conversation_id VARCHAR(36) NOT NULL REFERENCES conversations(id),
+    role VARCHAR(20) NOT NULL,
+    content TEXT NOT NULL,
+    lesson_id VARCHAR(36),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+
+CREATE TABLE IF NOT EXISTS lesson_progress (
+    id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    user_id VARCHAR(36) NOT NULL REFERENCES users(id),
+    lesson_id VARCHAR(36) NOT NULL REFERENCES lessons(id),
+    completed BOOLEAN DEFAULT FALSE,
+    score FLOAT DEFAULT 0.0,
+    time_spent_minutes INTEGER DEFAULT 0,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_lesson_progress_user_id ON lesson_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_progress_lesson_id ON lesson_progress(lesson_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_lesson_progress_user_lesson ON lesson_progress(user_id, lesson_id);
+
 -- Modules
 INSERT INTO modules (id, title, slug, description, subject, "order", milestone_id) VALUES
 ('m001', 'Voltage, Current & Resistance', 'voltage-current-resistance', 'Fundamental electrical quantities and Ohm''s Law.', 'Electronics Foundations', 1, 1),

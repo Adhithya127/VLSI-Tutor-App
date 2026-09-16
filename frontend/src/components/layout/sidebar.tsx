@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { getProgressOverview, type ProgressOverview } from "@/lib/api/client";
 
 const navigation = [
   {
@@ -12,6 +15,7 @@ const navigation = [
       { name: "Journey", href: "/journey" },
       { name: "Lessons", href: "/lessons" },
       { name: "Exercises", href: "/exercises" },
+      { name: "Progress", href: "/progress" },
     ],
   },
   {
@@ -34,6 +38,16 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const [progress, setProgress] = useState<ProgressOverview | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getProgressOverview().then(setProgress).catch(() => {});
+  }, [user]);
+
+  const level = progress?.level ?? 1;
+  const xpInLevel = progress?.xp_in_level ?? 0;
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:border-r border-border bg-card">
@@ -74,14 +88,21 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-3 py-4 border-t border-border">
-        <div className="px-3 py-2">
-          <p className="text-xs text-muted-foreground">Level 1</p>
-          <div className="mt-1 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div className="h-full w-0 bg-primary rounded-full" />
-          </div>
+      {user && (
+        <div className="px-3 py-4 border-t border-border">
+          <Link href="/progress" className="block px-3 py-2 rounded-md hover:bg-muted transition-colors">
+            <p className="text-xs text-muted-foreground">
+              Level {level} — {xpInLevel} / 100 XP
+            </p>
+            <div className="mt-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${xpInLevel}%` }}
+              />
+            </div>
+          </Link>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

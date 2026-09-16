@@ -6,10 +6,12 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
-import { ArrowLeft, Clock, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, Clock, BookOpen, Loader2, CheckCircle2 } from "lucide-react";
 import {
   getLesson,
   getModule,
+  markLessonComplete,
+  getLessonProgress,
   type LessonSummary,
   type ModuleDetail,
 } from "@/lib/api/client";
@@ -23,18 +25,36 @@ export default function LessonPage() {
   const [module, setModule] = useState<ModuleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     if (!lessonId) return;
-    getLesson(lessonId)
-      .then((l) => {
+    Promise.all([
+      getLesson(lessonId),
+      getLessonProgress(lessonId).catch(() => null),
+    ])
+      .then(([l, prog]) => {
         setLesson(l);
+        setCompleted(prog?.completed ?? false);
         return getModule(l.module_id);
       })
       .then(setModule)
       .catch(() => setError("Could not load lesson."))
       .finally(() => setLoading(false));
   }, [lessonId]);
+
+  async function handleMarkComplete() {
+    if (!lessonId || marking) return;
+    setMarking(true);
+    try {
+      await markLessonComplete(lessonId, 1.0);
+      setCompleted(true);
+    } catch {
+    } finally {
+      setMarking(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -81,9 +101,30 @@ export default function LessonPage() {
         title={lesson.title}
         description={module?.title ?? ""}
         actions={
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            {lesson.duration_minutes} min
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              {lesson.duration_minutes} min
+            </div>
+            {!completed ? (
+              <Button
+                size="sm"
+                onClick={handleMarkComplete}
+                disabled={marking}
+              >
+                {marking ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                )}
+                Mark Complete
+              </Button>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-sm text-green-600 font-medium">
+                <CheckCircle2 className="h-4 w-4" />
+                Completed
+              </span>
+            )}
           </div>
         }
       />
