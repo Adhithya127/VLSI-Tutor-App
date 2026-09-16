@@ -109,7 +109,7 @@ async def stream_gemini_response(
 
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash:streamGenerateContent?"
+        f"gemini-2.5-flash:streamGenerateContent?"
         f"alt=sse&key={settings.GOOGLE_API_KEY}"
     )
 
