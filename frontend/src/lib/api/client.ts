@@ -149,3 +149,115 @@ export async function getLesson(lessonId: string): Promise<LessonSummary> {
 export async function getMilestones(): Promise<MilestoneInfo[]> {
   return request<MilestoneInfo[]>("/api/v1/curriculum/milestones");
 }
+
+export interface Conversation {
+  id: string;
+  title: string;
+  created_at: string;
+  message_count: number;
+}
+
+export interface Message {
+  id: string;
+  role: string;
+  content: string;
+  created_at: string;
+}
+
+export async function createConversation(
+  title?: string,
+): Promise<Conversation> {
+  return request<Conversation>("/api/v1/chat/conversations", {
+    method: "POST",
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function getConversations(): Promise<Conversation[]> {
+  return request<Conversation[]>("/api/v1/chat/conversations");
+}
+
+export async function getMessages(
+  conversationId: string,
+): Promise<Message[]> {
+  return request<Message[]>(
+    `/api/v1/chat/conversations/${conversationId}/messages`,
+  );
+}
+
+export async function sendMessageStream(
+  conversationId: string,
+  content: string,
+  lessonId?: string,
+  onChunk?: (text: string) => void,
+  onDone?: () => void,
+  onError?: (error: string) => void,
+): Promise<void> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const body: Record<string, string> = { content };
+  if (lessonId) {
+    body.lesson_id = lessonId;
+  }
+
+  const res = await fetch(
+    `${API_BASE}/api/v1/chat/conversations/${conversationId}/messages`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    onError?.(err?.detail || `Request failed: ${res.status}`);
+    return;
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) {
+    onError?.("No response body");
+    return;
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const data = JSON.parse(line);
+        if (data.text) {
+          onChunk?.(data.text);
+        }
+        if (data.error) {
+          onError?.(data.error);
+          return;
+        }
+        if (data.done) {
+          onDone?.();
+          return;
+        }
+      } catch {
+        // skip malformed lines
+      }
+    }
+  }
+
+  onDone?.();
+}

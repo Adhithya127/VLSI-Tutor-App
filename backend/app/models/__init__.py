@@ -5,3 +5,4 @@ from app.models.exercise import Exercise, ExerciseAttempt  # noqa: F401
 from app.models.mastery import Mastery, ReviewSchedule  # noqa: F401
 from app.models.resource import Resource, ResourceChunk  # noqa: F401
 from app.models.embedding import Embedding  # noqa: F401
+from app.models.chat import Conversation, Message  # noqa: F401
