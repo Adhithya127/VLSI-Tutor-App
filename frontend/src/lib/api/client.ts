@@ -261,3 +261,65 @@ export async function sendMessageStream(
 
   onDone?.();
 }
+
+export interface Exercise {
+  id: string;
+  lesson_id: string | null;
+  concept_id: string | null;
+  title: string;
+  exercise_type: string;
+  difficulty: number;
+  question: string;
+  options: string | null;
+  correct_answer: string | null;
+  explanation: string | null;
+  xp_reward: number;
+}
+
+export interface ExerciseResult {
+  attempt_id: string;
+  exercise_id: string;
+  is_correct: boolean;
+  correct_answer: string | null;
+  explanation: string | null;
+  xp_earned: number;
+  total_xp: number;
+}
+
+export interface ExerciseStats {
+  total: number;
+  attempted: number;
+  correct: number;
+}
+
+export async function getExercisesForLesson(
+  lessonId: string,
+): Promise<Exercise[]> {
+  return request<Exercise[]>(`/api/v1/exercises/lesson/${lessonId}`);
+}
+
+export async function getLessonExerciseStats(
+  lessonId: string,
+): Promise<ExerciseStats> {
+  return request<ExerciseStats>(`/api/v1/exercises/lesson/${lessonId}/stats`);
+}
+
+export async function submitExercise(
+  exerciseId: string,
+  answer: string,
+  timeSeconds?: number,
+): Promise<ExerciseResult> {
+  return request<ExerciseResult>(`/api/v1/exercises/${exerciseId}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ answer, time_seconds: timeSeconds }),
+  });
+}
+
+export async function getExerciseOverview(): Promise<{
+  total_exercises: number;
+  attempted: number;
+  correct: number;
+  accuracy: number;
+}> {
+  return request("/api/v1/exercises/stats/overview");
+}
