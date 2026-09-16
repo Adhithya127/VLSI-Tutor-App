@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://vlsi:vlsi@localhost:5432/vlsi_tutor"
     DATABASE_SYNC_URL: str = "postgresql+psycopg2://vlsi:vlsi@localhost:5432/vlsi_tutor"
 
-    CORS_ORIGINS: str = '["http://localhost:3000","https://frontend-seven-mu-qh1q0e6hfm.vercel.app"]'
+    CORS_ORIGINS: str = '["http://localhost:3000","https://frontend-seven-mu-qh1q0e6hfm.vercel.app","https://frontend-3tr6xfe3r-adhithya127.vercel.app"]'
 
     SECRET_KEY: str = "dev-secret-key-change-in-production"
     OPENAI_API_KEY: str = ""
